@@ -12,4 +12,5 @@ const podcastSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
 export default mongoose.model("Podcast", podcastSchema);

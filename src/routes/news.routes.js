@@ -12,12 +12,38 @@ import {
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
-const upload = multer({ dest: "uploads/" });
+
+// Configure Multer for image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Save to uploads folder
+  },
+  filename: function (req, file, cb) {
+    // Create unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'news-' + uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images only
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
 
 // Public reads
 router.get("/", listNews);     // paginated (responds {page,limit,total,items})
 router.get("/all", getAllNews); // full list (array)
-router.get("/:slug", getNews);
+router.get("/:id", getNews);    // CHANGED FROM :slug TO :id
 
 // Protected writes
 router.post(
@@ -34,7 +60,7 @@ router.post(
   createNews
 );
 
-router.put("/:slug", requireAuth, upload.single("image"), updateNews);
-router.delete("/:slug", requireAuth, deleteNews);
+router.put("/:id", requireAuth, upload.single("image"), updateNews);  // CHANGED FROM :slug TO :id
+router.delete("/:id", requireAuth, deleteNews);                       // CHANGED FROM :slug TO :id
 
 export default router;
