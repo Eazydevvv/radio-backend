@@ -13,7 +13,7 @@ import eventRoutes from "./routes/event.routes.js";
 import podcastRoutes from "./routes/podcasts.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 
-import Podcast from './models/Podcast.js';
+import Podcast from './models/Podcast.js'; // ✅ Keep this import
 
 dotenv.config();
 const app = express();
@@ -38,7 +38,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api', routes);
 app.use("/api/news", newsRoutes);
 app.use("/api/events", eventRoutes);
-app.use("/api/podcasts", podcastRoutes); // ← Now this will work!
+app.use("/api/podcasts", podcastRoutes);
 app.use("/api/auth", authRoutes);
 
 // Health check
@@ -49,8 +49,7 @@ app.get('/', (_req, res) => {
 // Error handler
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// ✅ MOVE auto-delete function HERE (before app.listen)
 function startAutoDelete() {
     setInterval(async () => {
       try {
@@ -77,7 +76,10 @@ function startAutoDelete() {
         console.error('❌ Auto-delete error:', error);
       }
     }, 60 * 60 * 1000); // Check every hour
-  }
-  
-  // Start the auto-delete
-  startAutoDelete();
+}
+
+// Start the auto-delete
+startAutoDelete();
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
